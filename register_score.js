@@ -10,6 +10,11 @@ function doPost(e) {
             const userId = event.source.userId;
             const messageText = event.message.text;
 
+            this.saveLog(eventType);
+            this.saveLog(replyToken);
+            this.saveLog(userId);
+            this.saveLog(messageText);
+
             if (eventType === 'message' && messageText === '麻雀の収支を記録する') {
                 const flexMessage = {
                     type: 'flex',
@@ -27,125 +32,7 @@ function doPost(e) {
                             type: 'box',
                             layout: 'vertical',
                             spacing: 'md',
-                            contents: [
-                                {
-                                    type: 'text',
-                                    text: '麻雀の収支を記録する',
-                                    weight: 'bold',
-                                    size: 'md',
-                                },
-                                {
-                                    type: 'text',
-                                    text: '1着から4着までの回数と収支、雀荘を入力してください。',
-                                    wrap: true,
-                                    margin: 'md',
-                                    size: 'sm',
-                                },
-                                {
-                                    type: 'separator',
-                                    margin: 'md',
-                                },
-                                {
-                                    type: 'text',
-                                    text: '1着の回数',
-                                    margin: 'md',
-                                    size: 'sm',
-                                },
-                                {
-                                    type: 'input',
-                                    margin: 'md',
-                                    inputType: 'number',
-                                    action: {
-                                        type: 'postback',
-                                        label: '入力する',
-                                        data: '1st',
-                                    },
-                                },
-                                {
-                                    type: 'text',
-                                    text: '2着の回数',
-                                    margin: 'md',
-                                    size: 'sm',
-                                },
-                                {
-                                    type: 'input',
-                                    margin: 'md',
-                                    inputType: 'number',
-                                    action: {
-                                        type: 'postback',
-                                        label: '入力する',
-                                        data: '2nd',
-                                    },
-                                },
-                                {
-                                    type: 'text',
-                                    text: '3着の回数',
-                                    margin: 'md',
-                                    size: 'sm',
-                                },
-                                {
-                                    type: 'input',
-                                    margin: 'md',
-                                    inputType: 'number',
-                                    action: {
-                                        type: 'postback',
-                                        label: '入力する',
-                                        data: '3rd',
-                                    },
-                                },
-                                {
-                                    type: 'text',
-                                    text: '4着の回数',
-                                    margin: 'md',
-                                    size: 'sm',
-                                },
-                                {
-                                    type: 'input',
-                                    margin: 'md',
-                                    inputType: 'number',
-                                    action: {
-                                        type: 'postback',
-                                        label: '入力する',
-                                        data: '4th',
-                                    },
-                                },
-                                {
-                                    type: 'text',
-                                    text: '収支',
-                                    margin: 'md',
-                                    size: 'sm',
-                                },
-                                {
-                                    type: 'input',
-                                    margin: 'md',
-                                    inputType: 'number',
-                                    action: {
-                                        type: 'postback',
-                                        label: '入力する',
-                                        data: 'profitLoss',
-                                    },
-                                },
-                                {
-                                    type: 'text',
-                                    text: '雀荘',
-                                    margin: 'md',
-                                    size: 'sm',
-                                },
-                                {
-                                    type: 'select',
-                                    margin: 'md',
-                                    options: [
-                                        { text: '雀荘A', value: 'A' },
-                                        { text: '雀荘B', value: 'B' },
-                                        { text: '雀荘C', value: 'C' },
-                                    ],
-                                    action: {
-                                        type: 'postback',
-                                        label: '選択する',
-                                        data: 'place',
-                                    },
-                                },
-                            ],
+                            contents: [],
                         },
                         footer: {
                             type: 'box',
@@ -181,7 +68,12 @@ function doPost(e) {
                     payload: JSON.stringify(data),
                 };
 
-                UrlFetchApp.fetch(url, options);
+                try {
+                    response = UrlFetchApp.fetch(url, options);
+                    content = response.getContentText();
+                } catch (e) {
+                    this.saveLog(e.message);
+                }
             }
 
             if (eventType === 'postback') {
@@ -244,4 +136,14 @@ function doPost(e) {
     }
 
     return ContentService.createTextOutput('success');
+}
+
+function saveLog(text) {
+    // 現在日時を取得
+    const now = Utilities.formatDate(new Date(), "Asia/Tokyo", "yyyy/MM/dd HH:mm:ss");
+
+    const lastRow = logSheet.getLastRow();
+    // スプレッドシートにログを出力
+    logSheet.getRange(lastRow + 1, 1).setValue(text);
+    logSheet.getRange(lastRow + 1, 2).setValue(now);
 }
