@@ -26,7 +26,7 @@ function doPost(e) {
 
 function validateFormat(str) {
     // '8-6-3-2 32000 渋谷かめきたざわ' のようなフォーマットであるかチェック
-    const regex = /^\d{1,2}-\d{1,2}-\d{1,2}-\d{1,2}\s-?\d+\s.+$/;
+    const regex = /^\d{1,2}-\d{1,2}-\d{1,2}-\d{1,2} [+-]?\d+ \w+$/;
 
     return regex.test(str);
 }
