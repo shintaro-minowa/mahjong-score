@@ -1,3 +1,8 @@
+const LINE_ACCESS_TOKEN = '';
+const LINE_REPLY_URL = '';
+const SHEET_ID = '';
+const logSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('log');
+
 function doPost(e) {
     const event = JSON.parse(e.postData.contents).events[0];
     const userId = event.source.userId;
