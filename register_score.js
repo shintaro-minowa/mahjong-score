@@ -10,7 +10,9 @@ function doPost(e) {
     const userMessage = event.message.text;
 
     if (userMessage.indexOf("雀荘") !== -1) {
-        this.lineReply(replyToken, "雀荘一覧です");
+        const allStoresNameStr = this.getAllStoresNameStr();
+
+        this.lineReply(replyToken, "登録されている雀荘の一覧です。\n" + allStoresNameStr);
     }
 
     if (this.validateFormat(userMessage)) {
@@ -72,16 +74,41 @@ function saveScore(score) {
     scoreSheet.getRange(inputRow, 4).setValue("=D" + lastRow + "+C" + inputRow);
     scoreSheet.getRange(inputRow, 5).setValue("=C" + inputRow + "+G" + inputRow);
     scoreSheet.getRange(inputRow, 6).setValue("=F" + lastRow + "+E" + inputRow);
-    if (store) {
-        scoreSheet.getRange(inputRow, 7).setValue("=" + store['baFee'] + "*L" + inputRow + "+" + store['topFee'] + "*H" + inputRow + "+" + store['entranceFee']);
-    }
     scoreSheet.getRange(inputRow, 8).setValue(score['first']);
     scoreSheet.getRange(inputRow, 9).setValue(score['second']);
     scoreSheet.getRange(inputRow, 10).setValue(score['third']);
     scoreSheet.getRange(inputRow, 11).setValue(score['forth']);
     scoreSheet.getRange(inputRow, 12).setValue("=H" + inputRow + "+I" + inputRow + "+J" + inputRow + "+K" + inputRow);
     scoreSheet.getRange(inputRow, 13).setValue(score['storeName']);
+    if (store) {
+        scoreSheet.getRange(inputRow, 7).setValue("=" + store['baFee'] + "*L" + inputRow + "+" + store['topFee'] + "*H" + inputRow + "+" + store['entranceFee']);
+        scoreSheet.getRange(inputRow, 14).setValue(store['rate']);
+    }
 
+}
+
+function getAllStores() {
+    // 雀荘の情報のシートを取得
+    const storeSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('stores');
+    // 雀荘の情報を全件取得
+    let data = storeSheet.getDataRange().getValues();
+    // ヘッダーを削除
+    data.shift();
+
+    return data;
+}
+
+function getAllStoresNameStr() {
+    stores = this.getAllStores();
+
+    storeNames = [];
+    stores.forEach(function (element) {
+        storeNames.push(element[0]);
+    });
+
+    const storeNamesStr = storeNames.join("\n");
+
+    return storeNamesStr;
 }
 
 function getStore(storeName) {
@@ -94,7 +121,7 @@ function getStore(storeName) {
 
     if (row === undefined) return undefined;
 
-    let store = { "baFee": row[1], "topFee": row[2], "entranceFee": row[3] };
+    let store = { "baFee": row[1], "topFee": row[2], "entranceFee": row[3], "rate": row[4] };
 
     return store;
 }
